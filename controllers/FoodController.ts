@@ -31,6 +31,7 @@ export const AddFood = async (req: Request, res: Response, next: NextFunction) =
     }
 }
 
-export const getAllFoods = (req: Request, res: Response, next: NextFunction) => {
-    
+export const getAllFoods = async (req: Request, res: Response, next: NextFunction) => {
+    const foods = await Food.find();
+    return res.status(200).json(foods)
 }

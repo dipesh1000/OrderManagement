@@ -13,7 +13,7 @@ const imageStorage = multer.diskStorage({
     }
 })
 
-const imageService = multer({storage: imageStorage}).array('images', 10)
+export const imageService = multer({storage: imageStorage}).array('images', 10)
 
 
 router.use(Authenticate)

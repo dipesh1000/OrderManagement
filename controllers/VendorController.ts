@@ -33,15 +33,13 @@ export const GetVendorProfile = async (req: Request, res: Response, next: NextFu
 }
 
 export const UpdateVendorProfile = async (req: Request, res: Response, next: NextFunction) => {
-    const {name, address, phone, foodType} = <EditVendorInputs>req.body;
     const user = req.user;
     if (user) {
         const existingUser = await FindVendor(user._id);
-        if (existingUser !== null) {
-            existingUser.name = name;
-            existingUser.address = address;
-            existingUser.phone = phone;
-            existingUser.foodType = foodType;
+        if (existingUser) {
+            const files = req.files as [Express.Multer.File];
+            const images = files.map((file: Express.Multer.File) => file.filename);
+            existingUser.coverImages.push(...images);
             const saveResults = await existingUser.save();
             return res.json(saveResults);
         }
