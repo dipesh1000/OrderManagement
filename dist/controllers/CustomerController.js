@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EditCustomerProfile = exports.CustomerProfile = exports.RequestOTP = exports.CustomerVerify = exports.CustomerLogin = exports.CustomerSignUp = void 0;
+exports.CreateOrder = exports.EditCustomerProfile = exports.CustomerProfile = exports.RequestOTP = exports.CustomerVerify = exports.CustomerLogin = exports.CustomerSignUp = void 0;
 const class_transformer_1 = require("class-transformer");
 const dto_1 = require("../dto");
 const class_validator_1 = require("class-validator");
@@ -155,4 +155,16 @@ const EditCustomerProfile = (req, res, next) => __awaiter(void 0, void 0, void 0
     return res.status(400).json({ message: 'Error With Update Request' });
 });
 exports.EditCustomerProfile = EditCustomerProfile;
+const CreateOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    // grab current login customer
+    const customer = req.user;
+    console.log(customer, "from customer");
+    return res.send("response Okay");
+    // create an order ID
+    // Grab order items from request [{id: XX, unit: XX}]
+    // Calculate order amount
+    // Create Order with Item descriptions
+    // Finally update Orders to user account
+});
+exports.CreateOrder = CreateOrder;
 //# sourceMappingURL=CustomerController.js.map

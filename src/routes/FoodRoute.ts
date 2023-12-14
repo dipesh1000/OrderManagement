@@ -16,8 +16,8 @@ const imageStorage = multer.diskStorage({
 export const imageService = multer({storage: imageStorage}).array('images', 10)
 
 
+router.get('/', getAllFoods);
 router.use(Authenticate)
 router.post('/', imageService, AddFood);
-router.get('/', getAllFoods);
 
 export {router as FoodRoute}

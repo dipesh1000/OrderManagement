@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { plainToClass } from 'class-transformer'
-import { CreateCustomerInputs, CustomerEditInputs, UserLoginInput } from "../dto";
+import { CreateCustomerInputs, CustomerEditInputs, OrderInputs, UserLoginInput } from "../dto";
 import {validate} from 'class-validator';
 import { GenerateOtp, GeneratePassword, GenerateSalt, GenerateSignature, onRequestOTP, validatePassword } from "../utility";
-import { Customer } from "../models";
+import { Customer, Food, Order } from "../models";
 
 export const CustomerSignUp = async (req: Request, res: Response, next:NextFunction) => {
 
@@ -30,7 +30,6 @@ export const CustomerSignUp = async (req: Request, res: Response, next:NextFunct
     // Generate OTP
     const {otp, expiry} = GenerateOtp();
 
-
     const result = await Customer.create({
         email: email,
         password: userPassword,
@@ -43,7 +42,8 @@ export const CustomerSignUp = async (req: Request, res: Response, next:NextFunct
         address: '',
         verified: false,
         lat: 0,
-        lng: 0
+        lng: 0,
+        orders: []
     })
 
     if (result) {
@@ -183,3 +183,86 @@ export const EditCustomerProfile = async (req: Request, res: Response, next: Nex
     return res.status(400).json({message: 'Error With Update Request'})
 
 }
+
+export const CreateOrder = async (req: Request, res: Response, next: NextFunction) => {
+
+    // grab current login customer
+    const customer = req.user;
+    
+    if (customer) {
+        /** ---- Need to work on serialize the order number ---- */
+        // create an order ID
+        const orderId = `${Math.floor(Math.random() * 899999) + 1000}`
+
+        const profile = await Customer.findById(customer._id);
+
+        // Grab order items from request [{id: XX, unit: XX}]
+        const cart = <[OrderInputs]>req.body;
+
+        let cartItems = Array();
+
+        let netAmount = 0.00;
+
+        // Calculate order amount
+        const foods = await Food.find().where('_id').in(cart.map(item => item._id)).exec();
+       
+        foods.map(food => {
+            cart.map(({_id, unit}) => {
+                if(food._id == _id) {
+                    netAmount += (food.price * unit);
+                    cartItems.push({food: food._id, unit})
+                }
+                
+            })
+        })
+
+        // Create Order with Item descriptions
+        if (cartItems) {
+            const currentOrder = await Order.create({
+                orderID: orderId,
+                items: cartItems,
+                totalAmount: netAmount,
+                orderDate: new Date(),
+                paidThrough: 'COD',
+                paymentResponse: '',
+                orderStatus: 'waiting'
+            })
+            // Finally update Orders to user account
+            if (currentOrder) {
+                profile.orders.push(currentOrder);
+                await profile.save();
+                return res.status(200).json(currentOrder)
+            }
+        }
+    } 
+    return res.status(400).json({message: 'Error With Create Orders'})
+}
+
+export const GetOrders = async (req: Request, res: Response, next: NextFunction) => {
+    const customer = req.user;
+
+    if (customer) {
+       const profile = await Customer.findById(customer._id).populate('orders').exec();
+       if (profile) {
+
+           res.status(201).json({message: 'Order Fetch Success', data: profile.orders});
+       }
+    }
+    res.status(401).json({message: "Error with Orders Api"});
+
+}
+
+export const GetOrderById = async (req: Request, res: Response, next: NextFunction) => {
+    const orderId = req.params.id;
+    
+    if (orderId) {
+
+        const order = await Order.findById(orderId).populate('items.food');
+        return res.status(201).json({message: "Success", order});
+
+    }
+    
+    res.status(401).json({message: "Error with Orders Api"});
+
+}
+
