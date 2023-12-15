@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { EditVendorInputs, VendorInputs } from "../dto";
 import { FindVendor } from "./AdminController";
 import { GenerateSignature, validatePassword } from "../utility";
+import { Order } from "../models";
 
 export const VendorLogin = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = <VendorInputs>req.body;
@@ -61,4 +62,14 @@ export const UpdateVendorService = async (req: Request, res: Response, next: Nex
         return res.json(existingUser);
     }
     return res.json({"message": "Vendor Information not found"})
+}
+
+export const GetCurrentOrders = async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+
+    if (user) {
+        const orders = await Order.find({vendorId: user._id}).populate('items.food');
+
+    }
+    return res.json({"message": "Order not found!"})
 }

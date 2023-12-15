@@ -266,3 +266,73 @@ export const GetOrderById = async (req: Request, res: Response, next: NextFuncti
 
 }
 
+// Add To Cart
+export const AddToCart = async (req: Request, res: Response, next: NextFunction) => {
+    const customer = req.user;
+    if (customer) {
+        const profile = await Customer.findById(customer._id).populate('cart.food');
+        // Get Cart Items
+        let cartItems = Array();
+
+        const {_id, unit} = <OrderInputs>req.body;
+
+        const food = await Food.findById(_id);
+
+        if (!food) {
+            return res.status(401).json({
+               message: "Food Not Available"
+            })
+        }
+        if (profile !== null) {
+            cartItems = profile?.cart ? profile?.cart : [];
+
+            if (cartItems?.length > 0) {
+                let existFoodItem = cartItems.filter((item) => item.food._id.toString() === _id)
+                if (existFoodItem.length > 0) {
+                    const index = cartItems.indexOf(existFoodItem[0])
+                    if (unit > 0) {
+                        cartItems[index] = {food, unit}
+                    } else {
+                        cartItems.splice(index, 1)
+                    }
+                } else {
+                    cartItems.push({food, unit})
+                }
+            } else {
+                cartItems.push({food, unit})
+            }
+            if (cartItems) {
+                    profile.cart = cartItems as any;
+                    const cartResult = await profile.save();
+                    return res.status(200).json(cartResult)
+                }
+        }
+    }
+    res.status(201).json({
+        "message": "Okay",
+        customer
+    })
+}
+
+// Add To Cart
+export const GetCart = async (req: Request, res: Response, next: NextFunction) => {
+    const customer = req.user;
+    if (customer) {
+        const profile = await Customer.findById(customer._id).populate('cart');
+        
+        res.status(201).json({message: "Cart Items", data: profile?.cart});
+        
+    }
+    res.status(401).json("Something Went Wrong!")
+}
+
+// Add To Cart
+export const DeleteCart = (req: Request, res: Response, next: NextFunction) => {
+    const customer = req.user;
+    if (customer) {
+        
+    }
+}
+
+
+

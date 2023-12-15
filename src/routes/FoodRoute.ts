@@ -20,4 +20,11 @@ router.get('/', getAllFoods);
 router.use(Authenticate)
 router.post('/', imageService, AddFood);
 
+
+// GetCurrentOrders
+router.get('/currentorders')
+
+// GetOrderDetails
+router.get('/orderDetails')
+
 export {router as FoodRoute}

@@ -14,6 +14,7 @@ interface CustomerDoc extends Document {
     otp_expiry: Date;
     lat: number,
     lag: number,
+    cart: [any],
     orders: [OrderDoc]
 }
 
@@ -30,6 +31,10 @@ const CustomerSchema = new Schema({
     otp_expiry: {type: Date, required:true},
     lat: {type: Number},
     lag: {type: Number},
+    cart: [{
+        food: {type: mongoose.Schema.ObjectId, ref: 'food', required: true},
+        unit: {type: Number, required: true}
+    }],
     orders: [
         {
             type: Schema.Types.ObjectId,
