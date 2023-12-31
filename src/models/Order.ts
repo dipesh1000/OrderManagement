@@ -3,12 +3,17 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface OrderDoc extends Document {
     orderID: string,
     vendorId: string,
-    items: [any];
-    totalAmount: number;
-    orderDate: Date;
-    paidThrough: string;
-    paymentResponse: number;
-    orderStatus: string;
+    items: [any],
+    totalAmount: number,
+    orderDate: Date,
+    paidThrough: string,
+    paymentResponse: number,
+    orderStatus: string,
+    remarks: string,
+    deliveryId: string,
+    appliedOffers: boolean,
+    offerId: string,
+    readyTime: number
 }
 
 const orderSchema = new Schema({
@@ -25,6 +30,11 @@ const orderSchema = new Schema({
     paidThrough: {type: String, required: true},
     paymentResponse: {type: Number},
     orderStatus: {type: String},
+    remarks: {type: String},
+    deliveryId: {type: String},
+    appliedOffers: {type: Boolean},
+    offerId: {type: String},
+    readyTime: {type: Number}
 }, {
     toJSON: {
         transform(doc, ret){

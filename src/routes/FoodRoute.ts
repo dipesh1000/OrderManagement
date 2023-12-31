@@ -6,14 +6,14 @@ import multer from "multer";
 const router = express.Router();
 const imageStorage = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, 'images')
+        cb(null, './src/images')
     },
     filename: function(req, file, cb){
         cb(null, new Date().toISOString()+'_'+file.originalname);
     }
 })
 
-export const imageService = multer({storage: imageStorage}).array('images', 10)
+const imageService = multer({storage: imageStorage}).array('images', 10)
 
 
 router.get('/', getAllFoods);

@@ -9,6 +9,7 @@ export const AddFood = async (req: Request, res: Response, next: NextFunction) =
     if(user) {
         const {name, description, category, foodType, readyTime, price} = <CreateFoodInputs>req.body;
         const vendor = await FindVendor(user._id);
+        console.log(vendor, "From ventor");
         if (vendor !== null) {
             const files = req.files as [Express.Multer.File];
             const images = files.map((file: Express.Multer.File) => file.filename)

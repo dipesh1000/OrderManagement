@@ -202,36 +202,44 @@ export const CreateOrder = async (req: Request, res: Response, next: NextFunctio
         let cartItems = Array();
 
         let netAmount = 0.00;
-
+        
+        let vendorId;
         // Calculate order amount
         const foods = await Food.find().where('_id').in(cart.map(item => item._id)).exec();
        
         foods.map(food => {
+            console.log(food, "food info");
             cart.map(({_id, unit}) => {
                 if(food._id == _id) {
+                    vendorId = food.vendorId;
                     netAmount += (food.price * unit);
                     cartItems.push({food: food._id, unit})
                 }
-                
             })
         })
-
         // Create Order with Item descriptions
         if (cartItems) {
             const currentOrder = await Order.create({
                 orderID: orderId,
+                vendorId: vendorId,
                 items: cartItems,
                 totalAmount: netAmount,
                 orderDate: new Date(),
                 paidThrough: 'COD',
                 paymentResponse: '',
-                orderStatus: 'waiting'
+                orderStatus: 'waiting',
+                remarks: '',
+                deliveryId: '',
+                appliedOffers: false,
+                offerId: null,
+                readyTime: 45
             })
             // Finally update Orders to user account
             if (currentOrder) {
+                profile.cart = [] as any;
                 profile.orders.push(currentOrder);
-                await profile.save();
-                return res.status(200).json(currentOrder)
+                const saveData = await profile.save();
+                return res.status(200).json(saveData)
             }
         }
     } 
@@ -308,10 +316,7 @@ export const AddToCart = async (req: Request, res: Response, next: NextFunction)
                 }
         }
     }
-    res.status(201).json({
-        "message": "Okay",
-        customer
-    })
+   
 }
 
 // Add To Cart
@@ -320,18 +325,25 @@ export const GetCart = async (req: Request, res: Response, next: NextFunction) =
     if (customer) {
         const profile = await Customer.findById(customer._id).populate('cart');
         
-        res.status(201).json({message: "Cart Items", data: profile?.cart});
+       return  res.status(201).json({message: "Cart Items", data: profile?.cart});
         
-    }
+    } 
     res.status(401).json("Something Went Wrong!")
 }
 
 // Add To Cart
-export const DeleteCart = (req: Request, res: Response, next: NextFunction) => {
-    const customer = req.user;
-    if (customer) {
-        
+export const DeleteCart = async (req: Request, res: Response, next: NextFunction) => {
+   const customer = req.user;
+   if(customer) {
+    const profile = await Customer.findById(customer._id).populate('cart.food');
+    if (profile != null) {
+        profile.cart = [] as any;
+        const cartResult = await profile.save();
+        return res.status(200).json(cartResult);
     }
+    
+   }
+   return res.status(400).json({message: 'Cart is already Empty'})
 }
 
 
